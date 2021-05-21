@@ -17,26 +17,25 @@ from model import ClassificationModel
 # train for one epoch to learn unique features
 def train(net, data_loader, train_optimizer):
     net.train()
-    total_loss, total_acc, total_abs, total_num, train_bar = 0.0, 0.0, 0.0, 0, tqdm(data_loader)
+    total_loss, total_num, train_bar = 0.0, 0, tqdm(data_loader)
     for img, pseudo_label, _ in train_bar:
         img = img.cuda(non_blocking=True)
         pseudo_label = pseudo_label.cuda(non_blocking=True)
         feature, logits = net(img)
 
-        am_mat = torch.argmax(logits, dim=1)
-        corr_mat = (am_mat == pseudo_label).float()
-        acc = torch.mean(corr_mat)
-        logit_abs_mean = torch.mean(torch.abs(logits))
         loss = F.cross_entropy(logits, pseudo_label)
+        pseudo_label_vec = torch.zeros_like(logits)
+        first_inds = torch.arange(
+            pseudo_label.shape[0], device=pseudo_label.device)
+        pseudo_label_vec[first_inds, pseudo_label] = 1
+        loss = F.binary_cross_entropy_with_logits(logits, pseudo_label_vec)
         train_optimizer.zero_grad()
         loss.backward()
         train_optimizer.step()
 
         total_num += batch_size
         total_loss += loss.item() * batch_size
-        total_acc += acc.item() * batch_size
-        total_abs += logit_abs_mean.item() * batch_size
-        train_bar.set_description('Train Epoch: [{}/{}] Loss {:.4f}, acc {:.4f}, labs {:.3g}'.format(epoch, epochs, total_loss / total_num, total_acc / total_num, total_abs / total_num))
+        train_bar.set_description('Train Epoch: [{}/{}] Loss: {:.4f}'.format(epoch, epochs, total_loss / total_num))
 
     return total_loss / total_num
 

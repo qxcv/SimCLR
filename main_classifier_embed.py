@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 import utils
-from model import ClassificationModel
+from model import ClassificationModelEmbed
 
 
 # train for one epoch to learn unique features
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=512, type=int, help='Number of images in each mini-batch')
     parser.add_argument('--epochs', default=500, type=int, help='Number of sweeps over the dataset to train')
     parser.add_argument('--lr', default=1e-3, type=float, help='lr for optimisation')
-    parser.add_argument('--out-dir', default='results_cls', type=str, help='out directory')
+    parser.add_argument('--out-dir', default='results_cls_em', type=str, help='out directory')
 
     # args parse
     args = parser.parse_args()
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=16, pin_memory=True)
 
     # model setup and optimizer config
-    model = ClassificationModel(n_labels=len(train_data) + 1, feature_dim=feature_dim).cuda()
+    model = ClassificationModelEmbed(n_labels=len(train_data) + 1, feature_dim=feature_dim).cuda()
     flops, params = profile(model, inputs=(torch.randn(1, 3, 32, 32).cuda(),))
     flops, params = clever_format([flops, params])
     print('# Model Params: {} FLOPs: {}'.format(params, flops))
