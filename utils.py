@@ -32,3 +32,26 @@ train_transform = transforms.Compose([
 test_transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])])
+
+
+class CIFAR10FakeLabels(CIFAR10):
+    """CIFAR10 train dataset which provides 'pseudo-labels' (equal to the index
+    of the image in the dataset for the train set, otherwise zero).
+    """
+
+    def __getitem__(self, index):
+        img, target = self.data[index], self.targets[index]
+        img = Image.fromarray(img)
+
+        assert self.transform is not None
+        img_xform = self.transform(img)
+
+        if self.train:
+            pseudo_label = index + 1
+        else:
+            pseudo_label = 0
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img_xform, pseudo_label, target

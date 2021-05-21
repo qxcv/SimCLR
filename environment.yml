@@ -1,0 +1,12 @@
+name: simclr
+channels:
+  - defaults
+dependencies:
+  - cudatoolkit=10.0
+  - pytorch=1.4
+  - python=3.8
+  - torchvision=0.5
+  - pandas=1.2
+  - tqdm=4
+  - pip:
+    - thop
