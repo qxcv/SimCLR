@@ -27,7 +27,7 @@ def train(net, data_loader, train_optimizer):
         corr_mat = (am_mat == pseudo_label).float()
         acc = torch.mean(corr_mat)
         logit_abs_mean = torch.mean(torch.abs(logits))
-        loss = F.cross_entropy(logits, pseudo_label)
+        loss = F.cross_entropy(logits / temperature, pseudo_label)
         train_optimizer.zero_grad()
         loss.backward()
         train_optimizer.step()
